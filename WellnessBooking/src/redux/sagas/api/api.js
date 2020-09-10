@@ -30,6 +30,7 @@ export function getAPI(URL, config = {}) {
       .then((response) => {
         const { data } = response;
         if (response.status >= 200 || response.status < 300) {
+          setTimeout(function(){ Toast.show(data, Toast.LONG); }, 100);
           return {
             success: true,
             data
@@ -55,10 +56,9 @@ export function getAPI(URL, config = {}) {
         message = message[0];
       }
     } else {
-      message = error.message;
+      message = error.response.data;
     }
-  
-    Toast.show(message, Toast.SHORT);
+    setTimeout(function(){ Toast.show(message, Toast.SHORT); }, 100);
   
     return {
       success: false,

@@ -24,6 +24,7 @@ class LoadingComp extends PureComponent {
                 <View style={styles.modalBackground}>
                     <View style={styles.activityIndicatorWrapper}>
                         <ActivityIndicator
+                            color={"#00979D"} size={"small"}
                             animating={showLoading} />
                     </View>
                 </View>

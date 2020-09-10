@@ -16,7 +16,7 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 isLoggedIn: true,
-                user: action.result.data
+                user: action.user
             };
 
         case LOGIN_ERROR:
