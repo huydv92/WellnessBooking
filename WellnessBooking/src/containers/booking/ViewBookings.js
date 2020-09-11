@@ -5,6 +5,7 @@ import { bindActionCreators } from "redux";
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { getBookings } from "../../redux/actions/bookingsAction"
+import CreateBooking from '../booking/CreateBooking';
 
 class viewBookings extends Component {
   constructor(props) {
@@ -20,7 +21,7 @@ class viewBookings extends Component {
   }
 
   floatPlusClicked = () => {
-    alert('ok')
+    this.refCreateBooking && this.refCreateBooking.open();
   }
 
 
@@ -47,9 +48,8 @@ class viewBookings extends Component {
   }
 
   render() {
-    const { user, listBookings } = this.props
-    console.log(user);
-    console.log(listBookings);
+    const { listBookings } = this.props;
+    const { isShowCreateBooking } = this.state;
     return (
       <View style={styles.container}>
         <View style={{ flex: 1 }}>
@@ -75,7 +75,9 @@ class viewBookings extends Component {
             />
           </TouchableOpacity>
         </View>
-
+        <CreateBooking
+          ref={(t) => this.refCreateBooking = t}
+        />
       </View>
     );
   }
