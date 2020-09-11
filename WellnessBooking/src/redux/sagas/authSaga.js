@@ -1,6 +1,6 @@
-import { call, put, take, takeLatest, takeEvery, all } from 'redux-saga/effects';
+import { put, takeLatest, takeEvery } from 'redux-saga/effects';
 import * as Actions from '../actions';
-import { getAPI, postAPI } from './api/api'
+import { postAPI } from './api/api'
 import API from '../../configs/API';
 
 export function* loginFlow() {

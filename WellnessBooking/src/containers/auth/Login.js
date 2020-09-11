@@ -22,7 +22,7 @@ class Login extends PureComponent {
 
     this.state = {
       userName: 'hr1@gmail.com',
-      password: '',
+      password: '123456aA',
       userNameError: '',
       passwordError:'',
     }
@@ -117,9 +117,6 @@ class Login extends PureComponent {
 const mapStateToProps = (state) => ({
   isLoggedIn: state.auth.isLoggedIn
 });
-// const mapDispatchToProps = {
-//   login  
-// };
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({

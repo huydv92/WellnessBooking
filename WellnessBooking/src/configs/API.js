@@ -1,13 +1,13 @@
-const API_ROOT = 'https://dfljauq3a1.execute-api.ap-southeast-1.amazonaws.com/default';
+// const API_ROOT = '';
 
 export default API = {
     AUTH: {
-      LOGIN: API_ROOT + '/DeveloperTest_Login'
+        LOGIN: 'https://dfljauq3a1.execute-api.ap-southeast-1.amazonaws.com/default/DeveloperTest_Login'
     },
     CREATE: {
-        BOOKING: API_ROOT + '/DeveloperTest_CreateBooking'
+        BOOKING: 'https://d0irjg216a.execute-api.ap-southeast-1.amazonaws.com/default/DeveloperTest_CreateBooking'
     },
     GET: {
-        BOOKING: API_ROOT + '/DeveloperTest_GetBookings'
+        BOOKINGS: 'https://u7b754tqv4.execute-api.ap-southeast-1.amazonaws.com/default/DeveloperTest_GetBookings'
     }
 };

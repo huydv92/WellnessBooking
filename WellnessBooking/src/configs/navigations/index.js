@@ -15,9 +15,7 @@ const optionsHeader = {
 const NavigationState = ({ isLoggedIn }) => {
     return (
         <NavigationContainer>
-            <Stack.Navigator 
-                  screenOptions={{ ...optionsHeader, animationEnabled: false }}
-            >
+            <Stack.Navigator >
                 {!isLoggedIn ? (
                     // No token found, user isn't signed in
                     <Stack.Screen
@@ -28,11 +26,13 @@ const NavigationState = ({ isLoggedIn }) => {
                             // When logging out, a pop animation feels intuitive
                             // You can remove this if you want the default 'push' animation
                             animationTypeForReplace: isLoggedIn ? 'push' : 'pop',
+                            headerShown: false
                         }}
                     />
                 ) : (
                         // User is signed in
-                        <Stack.Screen name="Home" component={ViewBookings} />
+                        <Stack.Screen name="View Bookings" component={ViewBookings}
+                        />
                     )}
             </Stack.Navigator>
         </NavigationContainer>

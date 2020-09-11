@@ -2,26 +2,26 @@ import axios from 'axios';
 import Toast from 'react-native-simple-toast';
 
 export function getAPI(URL, config = {}) {
-    console.log("axios.defaults.headers.common")
-    console.log(axios.defaults.headers.common)
-    return axios
-      .get(URL, config)
-      .then((response) => {
-        const { data } = response;
-        if (response.status === 200) {
-          return {
-            success: true,
-            data
-          };
-        }
+  console.log("axios.defaults.headers.common")
+  console.log(axios.defaults.headers.common)
+  return axios
+    .get(URL, config)
+    .then((response) => {
+      const { data } = response;
+      if (response.status === 200) {
         return {
-          success: false,
-          resp_status: response.status,
+          success: true,
           data
         };
-      })
-      .catch(parseErrorResponse);
-  }
+      }
+      return {
+        success: false,
+        resp_status: response.status,
+        data
+      };
+    })
+    .catch(parseErrorResponse);
+}
   
   export function postAPI(URL, post, config = {}) {
     console.log(axios.defaults.headers.common)
@@ -45,6 +45,26 @@ export function getAPI(URL, config = {}) {
       .catch(parseErrorResponse);
   }
 
+
+ export async function viewBookingsAPI(url,params) {
+   const user = params;
+    console.log(params)
+   let res = await axios({
+      method: 'post',
+      url: url,
+      data: {"user": params.user },
+      validateStatus: (status) => {
+        return status;
+      },
+    }).then(response => {
+      return response;
+    }).catch((error) => {
+      console.log(error);
+    });
+    return res;
+  }
+
+
   const parseErrorResponse = (error) => {
     let message;
     if (error.response && error.response.data && error.response.data instanceof Object) {
@@ -66,3 +86,5 @@ export function getAPI(URL, config = {}) {
       message,
     };
   };
+
+  

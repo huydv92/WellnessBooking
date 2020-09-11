@@ -1,4 +1,5 @@
 import  {
+    LOGIN,
     LOGIN_SUCCESS,
     LOGIN_ERROR,
     LOGOUT_SUCCESS
@@ -12,11 +13,16 @@ const initialState = {
 
 export default (state = initialState, action) => {
     switch (action.type) {
+        case LOGIN:
+            return {
+                ...state,
+                user: action.param.username
+            };
+
         case LOGIN_SUCCESS:
             return {
                 ...state,
-                isLoggedIn: true,
-                user: action.user
+                isLoggedIn: true
             };
 
         case LOGIN_ERROR:
@@ -24,6 +30,7 @@ export default (state = initialState, action) => {
                 ...state,
                 isLoggedIn: false,
                 errorMsg: action.error.message,
+                user: {}
             };
         case LOGOUT_SUCCESS:
             return { ...initialState };
