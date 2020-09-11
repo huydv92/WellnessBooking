@@ -6,10 +6,12 @@ import {
   Text,
   TextInput,
   Image,
-  TouchableOpacity} from 'react-native';
+  Platform,
+  TouchableOpacity
+} from 'react-native';
 import Modal from 'react-native-modalbox';
 import { Dropdown } from 'react-native-material-dropdown';
-import DatePicker from 'react-native-datepicker'
+import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 
 const W = Dimensions.get('window').width;
@@ -28,7 +30,11 @@ class CreateBooking extends Component {
     super(props);
     this.state = {
       isVisible: false,
-      typeOfEvent : ""
+      typeOfEvent: "",
+      selectedDate: null,
+      selectedTime: null,
+      isShowDateTimePicker: false,
+      mode: 'date'
     }
   }
 
@@ -43,6 +49,10 @@ class CreateBooking extends Component {
       isVisible: true
     })
   }
+  /**
+   * onClosingState() close modal
+   * when user swipe will close modal
+   */
 
   onClosingState = () => {
     setTimeout(() => {
@@ -55,41 +65,82 @@ class CreateBooking extends Component {
   }
 
   onChangeTextDropdown = (text) => {
-    this.setState({typeOfEvent: text})
+    this.setState({ typeOfEvent: text })
   }
 
-  closeAll = () => {
-    this.setState({
-      isVisible: false
-    });
+  //merge and format the date and time state
+  formatDate = (date, time) => {
+    const newDate = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+    const thedate = newDate && new Date(Date.parse(newDate)) || new Date();
+    return thedate;
+  };
+
+  /**
+   * onChange() change date and time 
+   * base on android/ios plaform will give a new datetime value
+   */
+  onChange = (event, selectedValue) => {
+    const { mode } = this.state;
+    if (Platform.OS === 'ios') {
+      const selectedDate = selectedValue || new Date();
+      this.setState({ selectedDate, mode: 'datetime', isShowDateTimePicker: false });
+    } else {
+      if (mode == 'date') {
+        const selectedDate = selectedValue || new Date();
+        this.setState({ selectedDate, mode: 'time' });
+      } else {
+        const selectedTime = selectedValue || new Date();
+        this.setState({ selectedTime, mode: 'date', isShowDateTimePicker: false });
+      }
+    }
+
+  };
+//Show date time picker
+  showPickerDate = () => {
+    this.setState({ isShowDateTimePicker: true })
+  }
+
+  createNewBookings = () => {
+    alert('ok');
   }
 
   renderContent() {
-    const currentDate = moment(new Date()).format("YYYY-MM-DD");
-    let {typeOfEvent} = this.state;
-    if (!typeOfEvent || typeOfEvent == "") {
-      typeOfEvent = "Please choose type of Event"
+    const { selectedDate, isShowDateTimePicker, mode, selectedTime, typeOfEvent } = this.state;
+    //get new date base on 2 value selected date and selected time
+    const newDate = selectedDate && selectedTime && this.formatDate(selectedDate, selectedTime) || new Date();
+    //check typeOfEvent empty or not
+    let valueTypeOfEvent = typeOfEvent;
+    if (!valueTypeOfEvent || valueTypeOfEvent == "") {
+      valueTypeOfEvent = "Please choose type of Event"
     }
+    const isShowFullSCreen = (Platform.OS === 'ios') && isShowDateTimePicker;
     return (
-      <View style={styles.container}>
+      <View style={isShowFullSCreen ? styles.containerIOS : styles.container}>
+        {/* view show only title */}
         <View style={styles.containerCal}>
-          <View style = {{marginTop: 15}}>
+          <View style={{ marginTop: 10 }}>
             <Text style={styles.title}>Create A Booking</Text>
           </View>
-          <View style={styles.viewTitle}>
-            <Text style={{color: '#B7B7B7'}}>Type Of Event</Text>
-            <Dropdown
-              ref={(target => this.refDropdown = target)}
-              inputContainerStyle={{ borderBottomColor: '#00000077' }}
-              label=""
-              labelHeight={0}
-              onChangeText={this.onChangeTextDropdown}
-              data={customData}
-              value = {typeOfEvent}
-            />
+          {/* view wrapper all content */}
+          <View style={styles.wrapperContent}>
+            {/* view show Type Of Event */}
+            <View style={styles.viewTitle}>
+              <Text style={{ color: '#B7B7B7' }}>Type Of Event</Text>
+              <Dropdown
+                ref={(target => this.refDropdown = target)}
+                style={{ paddingLeft: 5 }}
+                inputContainerStyle={{ borderBottomColor: '#00979D' }}
+                label=""
+                labelHeight={0}
+                onChangeText={this.onChangeTextDropdown}
+                data={customData}
+                value={valueTypeOfEvent}
+              />
+            </View>
+            {/* view show Location of Event */}
             <View style={styles.viewLocation}>
-              <Text style={{color: '#B7B7B7'}}>Location of Event</Text>
-              <View style = {{justifyContent:'center'}}>
+              <Text style={{ color: '#B7B7B7' }}>Location of Event</Text>
+              <View style={{ justifyContent: 'center' }}>
                 <TextInput
                   style={styles.inputStyle}
                   onChange={(value) => this.onChangeText(value)}
@@ -101,37 +152,33 @@ class CreateBooking extends Component {
                 />
               </View>
             </View>
-            <View style={{marginTop: 10}}>
-              <Text style={{color: '#B7B7B7'}}>Confirm Date & Time</Text>
-              <DatePicker
-                style={{ width: '100%', marginTop: 5, padding: 10 }}
-                date={this.state.date}
-                mode="date"
-                placeholder="select date"
-                format="YYYY-MM-DD"
-                minDate={moment(new Date()).format("YYYY-MM-DD")}
-                maxDate="2016-06-01"
-                confirmBtnText="Confirm"
-                cancelBtnText="Cancel"
-                customStyles={{
-                  dateIcon: {
-                    position: 'absolute',
-                    left: 0,
-                    top: 4,
-                    marginLeft: 0
-                  },
-                  dateInput: {
-                    marginLeft: 36
-                  }
-                }}
-                onDateChange={(date) => { this.setState({ date: date }) }}
-              />
-            </View>
-            <View style={styles.viewButton}>
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.textButton}>ADD NEW</Text>
+            {/* view show Confirm Date */}
+            <View style={{ marginTop: 10 }}>
+              <Text style={{ color: '#B7B7B7' }}>Confirm Date & Time</Text>
+              <TouchableOpacity style={styles.customDate} onPress={() => this.showPickerDate()}>
+                <View style={styles.confirmDate} >
+                  <Text style={styles.dateTime}>{selectedDate ? moment(selectedDate).format("MM-DD-YYYY") : moment().format("MM-DD-YYYY")}</Text>
+                </View>
+                <Image
+                  source={require('../../images/date.png')}
+                  style={styles.dateImg}
+                  resizeMode="contain" />
               </TouchableOpacity>
+              {isShowDateTimePicker && <DateTimePicker
+                testID="dateTimePicker"
+                value={newDate}
+                mode={mode}
+                is24Hour={true}
+                display="default"
+                onChange={this.onChange}
+              />}
             </View>
+            {/* view show Button Create New */}
+            {!isShowFullSCreen && <View style={styles.viewButton}>
+              <TouchableOpacity style={styles.button} onPress={this.createNewBookings}>
+                <Text style={styles.textButton}>Create New</Text>
+              </TouchableOpacity>
+            </View>}
           </View>
         </View>
       </View>
@@ -142,7 +189,7 @@ class CreateBooking extends Component {
     const { isVisible } = this.state;
     return (
       <Modal
-        animationType={'fade'}
+        animationType={'slide'}
         isOpen={isVisible}
         swipeToClose={isVisible}
         swipeArea={500}
@@ -169,15 +216,54 @@ const styles = StyleSheet.create({
     margin: 5,
     alignItems: 'center'
   },
+  containerIOS: {
+    height: H - 120,
+    left: 0,
+    right: 0,
+    top: 20,
+    position: 'absolute',
+    borderRadius: 10,
+    backgroundColor: "white",
+    padding: 15,
+    margin: 5,
+    alignItems: 'center'
+  },
+  customDate: {
+    flexDirection: 'row',
+    width: '100%',
+    paddingVertical: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dateTime: {
+    fontSize: 15,
+    fontWeight: '700'
+  },
   bodyCal: {
     paddingVertical: 5
+  },
+  confirmDate: {
+    borderColor: '#00979D',
+    borderWidth: 1 / 2,
+    borderRadius: 5,
+    height: 40,
+    flex: 1,
+    marginRight: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row'
   },
   viewLocation: {
     marginTop: 5
   },
   textButton: {
     color: "white",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    fontSize: 15
+  },
+  dateImg: {
+    width: 35,
+    height: 35
   },
   locationImg: {
     position: "absolute",
@@ -192,9 +278,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  viewTitle : {
+  wrapperContent: {
     width: '100%',
-    marginTop: 20 
+    marginTop: 20
+  },
+  viewTitle: {
+    flexDirection: 'column'
   },
   containerCal: {
     flex: 1,
@@ -219,10 +308,11 @@ const styles = StyleSheet.create({
     minHeight: 40,
     borderRadius: 5,
     textAlignVertical: 'center',
-    borderColor: '#00000077',
-    borderWidth: 1/2,
+    borderColor: '#00979D',
+    borderWidth: 1 / 2,
     marginTop: 5,
-    padding: 5
+    padding: 5,
+    paddingRight: 30
   },
   button: {
     width: 200,
