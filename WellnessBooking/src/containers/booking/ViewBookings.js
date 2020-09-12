@@ -8,6 +8,7 @@ import { getBookings } from "../../redux/actions/bookingsAction"
 import { createBooking } from "../../redux/actions/createBookingAction"
 import CreateBooking from '../booking/CreateBooking';
 import moment from 'moment';
+import { handleScale} from '../../utils/scaleUtil';
 
 class ViewBookings extends Component {
   constructor(props) {
@@ -87,7 +88,7 @@ class ViewBookings extends Component {
         </View>
         <View style={styles.location}>
           <Icon name="location-sharp" size={18} color={"#759BFA"} />
-          <View style = {{marginRight:10}}>
+          <View style = {{marginRight:handleScale(15)}}>
             <Text style={styles.actionText}>{item.event_location}</Text>
           </View>
         </View>
@@ -149,14 +150,14 @@ const styles = StyleSheet.create({
   },
   location: {
     flexDirection: 'row',
-    marginTop: 3,
-    marginLeft: 4
+    marginTop: handleScale(5),
+    marginLeft: handleScale(6)
   },
   wrapperDateTime : {
     flexDirection:'row',
     justifyContent:'space-between',
     alignItems:'center',
-    marginTop: 3
+    marginTop: handleScale(5)
   },
   viewNoWellness: {
     flex: 1,
@@ -164,32 +165,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   logo: {
-    width: 80,
-    height: 80
+    width: handleScale(90),
+    height: handleScale(90)
   },
   viewFloatPlus: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    bottom: handleScale(25),
+    right: handleScale(25),
   },
   actionWrapper: {
-    padding: 5
+    padding: handleScale(5)
   },
   cardBody: {
-    padding: 15,
+    padding: handleScale(15),
     backgroundColor: '#fff',
-    marginTop: 15,
-    borderRadius: 10,
+    marginTop: handleScale(20),
+    borderRadius: handleScale(10),
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
-    shadowRadius: 4,
-    marginLeft: 5,
-    marginRight: 5
+    shadowRadius: handleScale(6),
+    marginLeft: handleScale(10),
+    marginRight: handleScale(5)
   },
   textEmpty: {
     fontWeight: 'bold',
-    fontSize: 25,
+    fontSize: handleScale(32),
     color: '#00979D'
   },
   actionTitleWrap: {
@@ -199,36 +200,36 @@ const styles = StyleSheet.create({
   actionTimeWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 4
+    marginLeft: handleScale(6)
   },
   actionText: {
-    fontSize: 14,
-    marginLeft: 2
+    fontSize: handleScale(18),
+    marginLeft: handleScale(4)
   },
   textDate : {
-    fontSize: 13,
-    marginLeft: 2,
+    fontSize: handleScale(17),
+    marginLeft: handleScale(4),
     fontWeight:'200'
   },
   normalSeparatorLineStyle: {
     height: 1,
     backgroundColor: "#0D4045",
     width: '100%',
-    marginTop: 10
+    marginTop: handleScale(15)
   },
   createText: {
-    fontSize: 12,
+    fontSize: handleScale(15),
     fontWeight:'200',
-    marginLeft: 3
+    marginLeft: handleScale(5)
   },
   textTitle: {
-    fontSize: 17,
+    fontSize: handleScale(22),
     fontWeight: '500',
-    marginLeft: 3
+    marginLeft: handleScale(5)
   },
   eventTitle: {
-    marginLeft: 5,
-    fontSize: 14
+    marginLeft: handleScale(5),
+    fontSize: handleScale(18)
   }
 });
 

@@ -13,6 +13,7 @@ import Modal from 'react-native-modalbox';
 import { Dropdown } from 'react-native-material-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
+import { handleScale} from '../../utils/scaleUtil';
 
 const W = Dimensions.get('window').width;
 const H = Dimensions.get('window').height;
@@ -66,8 +67,9 @@ class CreateBooking extends PureComponent {
   }
 
   open = (userName) => {
+    
     this.setState({
-      isVisible: true,
+      isVisible: !this.state.isVisible,
       userName
     })
   }
@@ -193,8 +195,8 @@ class CreateBooking extends PureComponent {
       newDate = selectedDate && selectedTime && this.formatDate(selectedDate, selectedTime) || new Date();
     }
     return (
-      <View style={{ marginTop: 10 }}>
-        <Text style={{ color: '#B7B7B7' }}>Confirm Date & Time</Text>
+      <View style={{ marginTop: handleScale(15) }}>
+        <Text style={styles.textCommont}>Confirm Date & Time</Text>
         <TouchableOpacity style={styles.customDate} onPress={() => this.showPickerDate()}>
           <View style={styles.confirmDate} >
             <Text style={styles.dateTime}>
@@ -213,6 +215,7 @@ class CreateBooking extends PureComponent {
         </View>}
         { isShowDateTimePicker && <View style={styles.viewPicker}>
           <DateTimePicker
+            style={{ height: handleScale(200) }}
             testID="dateTimePicker"
             value={newDate}
             mode={(Platform.OS === 'ios') ? 'datetime' : mode}
@@ -237,10 +240,10 @@ class CreateBooking extends PureComponent {
     }
     return (
       <View style={styles.viewTitle}>
-        <Text style={{ color: '#B7B7B7' }}>Type Of Event</Text>
+        <Text style={styles.textCommont}>Type Of Event</Text>
         <Dropdown
           ref={(target => this.refDropdown = target)}
-          style={{ paddingLeft: 5 }}
+          style={{ paddingLeft: 5, color: 'black', fontSize: handleScale(20), marginTop: handleScale(10)}}
           inputContainerStyle={!!errorTypeOfEvent ? { borderBottomColor: 'red', borderBottomWidth: 1 } : { borderBottomColor: '#00979D' }}
           label=""
           labelHeight={0}
@@ -258,7 +261,7 @@ class CreateBooking extends PureComponent {
     const { location, errorLocation } = this.state;
     return (
       <View style={styles.viewLocation}>
-        <Text style={{ color: '#B7B7B7' }}>Location of Event</Text>
+        <Text style={styles.textCommont}>Location of Event</Text>
         <View style={{ justifyContent: 'center' }}>
           <TextInput
             style={errorLocation ? styles.inputStyleError : styles.inputStyle}
@@ -270,8 +273,8 @@ class CreateBooking extends PureComponent {
             style={styles.locationImg}
             resizeMode="contain"
           />
-          {!!errorLocation && <Text style={styles.errorStyle}>{errorLocation}</Text>}
         </View>
+        {!!errorLocation && <Text style={styles.errorStyle}>{errorLocation}</Text>}
       </View>
     )
   }
@@ -314,15 +317,24 @@ class CreateBooking extends PureComponent {
 
   render() {
     const { isVisible } = this.state;
+    const { isShowDateTimePicker } = this.state;
+    const isShowFullSCreen = (Platform.OS === 'ios') && isShowDateTimePicker;
     return (
       <Modal
-        animationType={'slide'}
+        style={{
+          top: 0,
+          width: '100%',
+          height:isShowFullSCreen ? H * 2 / 3 + handleScale(125) : H * 2 / 3 + handleScale(25),
+          borderRadius: 15
+        }}
+        position={"center"}
+        ref={"modal"}
         isOpen={isVisible}
-        swipeToClose={isVisible}
+        swipeToClose={true}
         swipeArea={500}
-        position="center"
+        keyboardTopOffset={0}
+        onClosed={this.close}
         onClosingState={this.onClosingState}
-        style={{ backgroundColor: 'transparent' }}
       >
         {this.renderContent()}
       </Modal>
@@ -336,25 +348,29 @@ const styles = StyleSheet.create({
     height: H * 2 / 3,
     left: 0,
     right: 0,
-    top: 20,
+    top: handleScale(20),
     position: 'absolute',
-    borderRadius: 10,
+    borderRadius: handleScale(10),
     backgroundColor: "white",
-    padding: 15,
-    margin: 5,
+    padding: handleScale(15),
+    margin: handleScale(5),
     alignItems: 'center'
   },
   containerIOS: {
-    height: H - 120,
+    height: H - handleScale(210),
     left: 0,
     right: 0,
-    top: 20,
+    top: handleScale(20),
     position: 'absolute',
-    borderRadius: 10,
+    borderRadius: handleScale(10),
     backgroundColor: "white",
-    padding: 15,
-    margin: 5,
+    padding: handleScale(15),
+    margin: handleScale(5),
     alignItems: 'center'
+  },
+  textCommont : {
+    color: '#B7B7B7',
+    fontSize: handleScale(20)
   },
   errorStyle: {
     color: 'red',
@@ -362,61 +378,61 @@ const styles = StyleSheet.create({
   customDate: {
     flexDirection: 'row',
     width: '100%',
-    paddingVertical: 5,
+    paddingVertical: handleScale(10),
     justifyContent: 'center',
     alignItems: 'center',
   },
   dateTime: {
-    fontSize: 15,
+    fontSize: handleScale(20),
     fontWeight: '700'
   },
   viewPicker: {
     width:'100%',
-    maxHeight:250
+    maxHeight: handleScale(220)
   },
   bodyCal: {
-    paddingVertical: 5
+    paddingVertical: handleScale(5)
   },
   confirmDate: {
     borderColor: '#00979D',
     borderWidth: 1 / 2,
-    borderRadius: 5,
-    height: 40,
+    borderRadius: handleScale(5),
+    height: handleScale(50),
     flex: 1,
-    marginRight: 5,
+    marginRight: handleScale(5),
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row'
   },
   viewLocation: {
-    marginTop: 5
+    marginTop: handleScale(10)
   },
   textButton: {
     color: "white",
     fontWeight: "bold",
-    fontSize: 15
+    fontSize: handleScale(20)
   },
   dateImg: {
-    width: 35,
-    height: 35
+    width: handleScale(45),
+    height: handleScale(45)
   },
   locationImg: {
     position: "absolute",
-    right: 10,
-    bottom: 12,
-    width: 20,
-    height: 15
+    right: handleScale(10),
+    bottom: handleScale(17),
+    width: handleScale(20),
+    height: handleScale(15)
   },
   viewButton: {
     width: '100%',
-    height: 60,
-    marginTop: 20,
+    height: handleScale(60),
+    marginTop: handleScale(40),
     justifyContent: 'center',
     alignItems: 'center'
   },
   wrapperContent: {
     width: '100%',
-    marginTop: 20
+    marginTop: handleScale(20)
   },
   viewTitle: {
     flexDirection: 'column'
@@ -425,45 +441,46 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     backgroundColor: "white",
-    padding: 15,
-    marginTop: 10,
-    borderRadius: 10,
+    padding: handleScale(15),
+    marginTop: handleScale(15),
+    marginBottom: handleScale(25),
+    borderRadius: handleScale(10),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowRadius: handleScale(4),
     // justifyContent:'center',
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: handleScale(26),
     fontWeight: 'bold'
   },
   inputStyle: {
     display: 'flex',
-    minHeight: 40,
-    borderRadius: 5,
+    minHeight: handleScale(50),
+    borderRadius: handleScale(5),
     textAlignVertical: 'center',
     borderColor: '#00979D',
     borderWidth: 1 / 2,
-    marginTop: 5,
-    padding: 5,
-    paddingRight: 30
+    marginTop: handleScale(15),
+    padding: handleScale(5),
+    paddingRight: handleScale(30)
   },
   inputStyleError: {
     display: 'flex',
-    minHeight: 40,
-    borderRadius: 5,
+    minHeight: handleScale(50),
+    borderRadius: handleScale(5),
     textAlignVertical: 'center',
     borderColor: 'red',
     borderWidth: 1 / 2,
-    marginTop: 5,
-    padding: 5,
-    paddingRight: 30
+    marginTop: handleScale(10),
+    padding: handleScale(5),
+    paddingRight: handleScale(30)
   },
   button: {
-    width: 200,
-    height: 40,
+    width: handleScale(240),
+    height: handleScale(55),
     backgroundColor: '#00979D',
     justifyContent: 'center',
     alignItems: 'center',
