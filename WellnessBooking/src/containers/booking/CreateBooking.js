@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { PureComponent } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,14 +17,14 @@ import moment from 'moment';
 const W = Dimensions.get('window').width;
 const H = Dimensions.get('window').height;
 
-const customData = [
-  { value: '1', label: 'Health Talk' },
-  { value: '2', label: 'Wellness Events' },
-  { value: '3', label: 'Fitness Activities' }
+const dataEvents = [
+  { value: '0', label: 'Health Talk' },
+  { value: '1', label: 'Wellness Events' },
+  { value: '2', label: 'Fitness Activities' }
 ];
 
 
-class CreateBooking extends Component {
+class CreateBooking extends PureComponent {
 
   constructor(props) {
     super(props);
@@ -34,19 +34,33 @@ class CreateBooking extends Component {
       selectedDate: null,
       selectedTime: null,
       isShowDateTimePicker: false,
-      mode: 'date'
+      mode: 'date',
+      location: '',
+      userName: ''
     }
   }
 
-  close = () => {
+  resetState() {
     this.setState({
-      isVisible: false
+      isVisible: false,
+      typeOfEvent: "",
+      selectedDate: null,
+      selectedTime: null,
+      isShowDateTimePicker: false,
+      mode: 'date',
+      location: '',
+      userName: ''
     })
   }
 
-  open = () => {
+  close = () => {
+    this.resetState();
+  }
+
+  open = (userName) => {
     this.setState({
-      isVisible: true
+      isVisible: true, 
+      userName
     })
   }
   /**
@@ -60,8 +74,8 @@ class CreateBooking extends Component {
     }, 500);
   }
 
-  onChangeText = (text) => {
-
+  onChangeText = (location) => {
+    this.setState({ location });
   }
 
   onChangeTextDropdown = (text) => {
@@ -78,6 +92,8 @@ class CreateBooking extends Component {
   /**
    * onChange() change date and time 
    * base on android/ios plaform will give a new datetime value
+   * if (Android) will change from date to time after press done
+   * if (IOS) just keep datetime picker
    */
   onChange = (event, selectedValue) => {
     const { mode } = this.state;
@@ -99,13 +115,28 @@ class CreateBooking extends Component {
   showPickerDate = () => {
     this.setState({ isShowDateTimePicker: true })
   }
-
+//TODO: MISSING VALIDATE
   createNewBookings = () => {
-    alert('ok');
+    const { selectedDate,selectedTime, location , typeOfEvent, userName } = this.state;
+    const newDate = selectedDate ? (Platform.OS === 'ios') ? selectedDate : this.formatDate(selectedDate, selectedTime) : new Date();
+    // if (Platform.OS === 'ios') {
+    //     newDate = selectedDate;
+    // }
+    const parseTimeToString = moment(newDate).format("YYYY-MM-DDTHH:mm:ss");
+    const parseCurrentDateToString = moment(new Date()).format("YYYY-MM-DDTHH:mm:ss");
+    const strEvent = dataEvents[parseInt(typeOfEvent)];
+    const createObj = {
+      event_title : strEvent.label,
+      event_location : location,
+      confirmed_datetime : parseTimeToString,
+      created_at : parseCurrentDateToString,
+      created_by : userName
+    }
+    this.props.onCreateBooking && this.props.onCreateBooking(createObj);
   }
 
   renderContent() {
-    const { selectedDate, isShowDateTimePicker, mode, selectedTime, typeOfEvent } = this.state;
+    const { selectedDate, isShowDateTimePicker, mode, selectedTime, typeOfEvent, location } = this.state;
     //get new date base on 2 value selected date and selected time
     const newDate = selectedDate && selectedTime && this.formatDate(selectedDate, selectedTime) || new Date();
     //check typeOfEvent empty or not
@@ -133,7 +164,7 @@ class CreateBooking extends Component {
                 label=""
                 labelHeight={0}
                 onChangeText={this.onChangeTextDropdown}
-                data={customData}
+                data={dataEvents}
                 value={valueTypeOfEvent}
               />
             </View>
@@ -143,7 +174,8 @@ class CreateBooking extends Component {
               <View style={{ justifyContent: 'center' }}>
                 <TextInput
                   style={styles.inputStyle}
-                  onChange={(value) => this.onChangeText(value)}
+                  onChangeText={(value) => this.onChangeText(value)}
+                  value = {location}
                 />
                 <Image
                   source={require('../../images/location.png')}
@@ -186,7 +218,7 @@ class CreateBooking extends Component {
   }
 
   render() {
-    const { isVisible } = this.state;
+    let { isVisible } = this.state;
     return (
       <Modal
         animationType={'slide'}

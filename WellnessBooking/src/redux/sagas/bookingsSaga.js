@@ -1,4 +1,4 @@
-import { call, put, take, takeLatest, takeEvery, all } from 'redux-saga/effects';
+import { put, takeEvery } from 'redux-saga/effects';
 import * as Actions from '../actions';
 import { viewBookingsAPI } from './api/api'
 import API from '../../configs/API';
@@ -8,8 +8,8 @@ export function* getBookingsFlow() {
 }
 
 function* getBookings(params) {
-    console.log(params);
     const obj = params.param;
+    yield put(Actions.showLoading(true));
     const res = yield viewBookingsAPI(API.GET.BOOKINGS, obj);
     console.log(res)
     if (res && res.data) {
@@ -17,5 +17,6 @@ function* getBookings(params) {
     } else {
         yield put(Actions.getBookingsError(res))
     }
+    yield put(Actions.showLoading(false));
 }
 

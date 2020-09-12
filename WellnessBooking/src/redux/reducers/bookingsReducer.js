@@ -1,19 +1,19 @@
-import  {
-    GET_BOOKINGS,
+import {
     GET_BOOKINGS_ERROR,
     GET_BOOKINGS_SUCCESS
 } from '../actions';
 
 const initialState = {
     errorMsg: '',
-    listBookings:[]
+    listBookings: []
 }
 
 export default (state = initialState, action) => {
     switch (action.type) {
         case GET_BOOKINGS_ERROR:
             return {
-                ...state            
+                ...state,
+                errorMsg: action && action.error && action.error.message
             };
 
         case GET_BOOKINGS_SUCCESS:

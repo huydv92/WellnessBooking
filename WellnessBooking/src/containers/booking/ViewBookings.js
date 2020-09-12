@@ -5,9 +5,10 @@ import { bindActionCreators } from "redux";
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { getBookings } from "../../redux/actions/bookingsAction"
+import { createBooking } from "../../redux/actions/createBookingAction"
 import CreateBooking from '../booking/CreateBooking';
 
-class viewBookings extends Component {
+class ViewBookings extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -21,9 +22,20 @@ class viewBookings extends Component {
   }
 
   floatPlusClicked = () => {
-    this.refCreateBooking && this.refCreateBooking.open();
+    const { user } = this.props
+    this.refCreateBooking && this.refCreateBooking.open(user);
   }
 
+  onCreateBooking = (obj) => {
+    this.props.createBooking && this.props.createBooking(obj);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { isSucessBooking} = this.props;
+    if (isSucessBooking) {
+      this.refCreateBooking && this.refCreateBooking.close();
+    }
+  }
 
   renderItem(items) {
     const item = items.item;
@@ -48,8 +60,7 @@ class viewBookings extends Component {
   }
 
   render() {
-    const { listBookings } = this.props;
-    const { isShowCreateBooking } = this.state;
+    const { listBookings, isSucessBooking} = this.props;
     return (
       <View style={styles.container}>
         <View style={{ flex: 1 }}>
@@ -76,6 +87,8 @@ class viewBookings extends Component {
           </TouchableOpacity>
         </View>
         <CreateBooking
+          onCreateBooking = {this.onCreateBooking}
+          isSucessBooking = {isSucessBooking}
           ref={(t) => this.refCreateBooking = t}
         />
       </View>
@@ -151,17 +164,20 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = ({auth, bookingsReducer}) => (
+const mapStateToProps = ({auth, bookingsReducer,createBookingReducer}) => (
   console.log(auth, bookingsReducer),
   {
     user: auth && auth.user,
-    listBookings: bookingsReducer && bookingsReducer.listBookings
+    listBookings: bookingsReducer && bookingsReducer.listBookings,
+    isSucessBooking: createBookingReducer && createBookingReducer.isSucessBooking
+
 });
 
 const mapDispatchToProps = dispatch => (
   bindActionCreators({
-    getBookings
+    getBookings,
+    createBooking
   }, dispatch)
 );
 
-export default connect(mapStateToProps, mapDispatchToProps)(viewBookings);
+export default connect(mapStateToProps, mapDispatchToProps)(ViewBookings);

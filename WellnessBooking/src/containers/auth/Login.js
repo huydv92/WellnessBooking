@@ -86,7 +86,6 @@ class Login extends PureComponent {
               onChange={(value) => this.setUserNameState(value)}
               errorText={userNameError}
               value={userName}
-              keyboardType={'numeric'}
             />
             <TextInputPassword
               secureTextEntry
