@@ -28,14 +28,25 @@ class Login extends PureComponent {
     }
   }
 
+  /**
+  * (setUserNameState) setState
+  * userName will get new value
+  */
   setUserNameState = (username) => {
     this.setState({ userName: username });
   }
 
+   /**
+  * (setPasswordState) setState
+  * password will get new value
+  */
   setPasswordState = (password) => {
     this.setState({ password: password });
   }
   
+  /**
+  * (validate) validate username and password
+  */
   validate = () => {
     const { userName, password } = this.state;
     console.log('validate');
@@ -103,10 +114,7 @@ class Login extends PureComponent {
             </View>
           </View>
 
-          <View style={styles.separatorWrap}>
-            {/* <View style={styles.separator} /> */}
-            {/* <View style={styles.separator} /> */}
-          </View>
+          <View style={styles.separatorWrap}></View>
         </ScrollView>
       </KeyboardAvoidingView>
     );

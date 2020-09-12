@@ -10,29 +10,27 @@ const Stack = createStackNavigator();
 
 const optionsHeader = {
     header: () => null,
-  };
+};
 
 const NavigationState = ({ isLoggedIn }) => {
     return (
         <NavigationContainer>
             <Stack.Navigator >
                 {!isLoggedIn ? (
-                    // No token found, user isn't signed in
+                    /** isLoggedIn is false will stay at Login
+                     * And true will show Dashboard
+                     */
                     <Stack.Screen
                         name="Login"
                         component={Login}
                         options={{
-                            // title: 'Login',
-                            // When logging out, a pop animation feels intuitive
-                            // You can remove this if you want the default 'push' animation
                             animationTypeForReplace: isLoggedIn ? 'push' : 'pop',
                             headerShown: false
                         }}
                     />
                 ) : (
                         // User is signed in
-                        <Stack.Screen name="View Bookings" component={ViewBookings}
-                        />
+                        <Stack.Screen name="View Bookings" component={ViewBookings} />
                     )}
             </Stack.Navigator>
         </NavigationContainer>
@@ -48,4 +46,3 @@ const mapStateToProps = (state) => (
 let AppWithNavigationState = connect(mapStateToProps, null)(NavigationState);
 export default AppWithNavigationState;
 
-  

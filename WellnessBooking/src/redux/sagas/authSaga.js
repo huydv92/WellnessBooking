@@ -19,16 +19,3 @@ function* login(params) {
         yield put(Actions.loginError(res))
     }
 }
-
-export function* logoutFlow(username) {
-     yield takeLatest(Actions.LOGOUT, logout);
-
-}
-
-function* logout(username) {
-    try {
-        yield put(Actions.logoutSuccess());
-    } catch (error) {
-
-    }
-}

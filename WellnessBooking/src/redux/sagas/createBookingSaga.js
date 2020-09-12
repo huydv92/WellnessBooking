@@ -10,16 +10,17 @@ export function* createBookingFlow() {
 function* createBooking(params) {
     console.log(params);
     const obj = params.params;
+    yield put(Actions.showLoading(true));
     const res = yield call(postAPI, API.CREATE.BOOKING, obj);
     const user = { ['user']: obj.created_by };
-    yield put(Actions.showLoading(true));
     if (res && res.data) {
         yield put(Actions.createBookingSuccess(res.data));
         yield delay(1000)
         yield put(Actions.getBookings(user));
+        yield put(Actions.showLoading(false));
     } else {
         yield put(Actions.createBookingError(res))
+        yield put(Actions.showLoading(false));
     }
-    yield put(Actions.showLoading(false));
 }
 

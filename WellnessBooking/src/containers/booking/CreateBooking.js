@@ -36,10 +36,16 @@ class CreateBooking extends PureComponent {
       isShowDateTimePicker: false,
       mode: 'date',
       location: '',
-      userName: ''
+      userName: '',
+      errorTypeOfEvent: '',
+      errorLocation: ''
     }
   }
 
+  /**
+   * resetState() close modal
+   * reset state and clear data
+   */
   resetState() {
     this.setState({
       isVisible: false,
@@ -49,7 +55,9 @@ class CreateBooking extends PureComponent {
       isShowDateTimePicker: false,
       mode: 'date',
       location: '',
-      userName: ''
+      userName: '',
+      errorTypeOfEvent: '',
+      errorLocation: ''
     })
   }
 
@@ -59,15 +67,15 @@ class CreateBooking extends PureComponent {
 
   open = (userName) => {
     this.setState({
-      isVisible: true, 
+      isVisible: true,
       userName
     })
   }
+
   /**
    * onClosingState() close modal
    * when user swipe will close modal
    */
-
   onClosingState = () => {
     setTimeout(() => {
       this.setState({ isVisible: false })
@@ -75,11 +83,11 @@ class CreateBooking extends PureComponent {
   }
 
   onChangeText = (location) => {
-    this.setState({ location });
+    this.setState({ location, errorLocation: '' });
   }
 
   onChangeTextDropdown = (text) => {
-    this.setState({ typeOfEvent: text })
+    this.setState({ typeOfEvent: text, errorTypeOfEvent: '' })
   }
 
   //merge and format the date and time state
@@ -96,135 +104,223 @@ class CreateBooking extends PureComponent {
    * if (IOS) just keep datetime picker
    */
   onChange = (event, selectedValue) => {
-    const { mode } = this.state;
-    if (Platform.OS === 'ios') {
-      const selectedDate = selectedValue || new Date();
-      this.setState({ selectedDate, mode: 'datetime', isShowDateTimePicker: false });
+    if (event.type === 'dismissed') {
+      this.setState({ isShowDateTimePicker: false, mode: 'date' });
     } else {
-      if (mode == 'date') {
-        const selectedDate = selectedValue || new Date();
-        this.setState({ selectedDate, mode: 'time' });
+      if (Platform.OS === 'ios') {
+        this.setState({ selectedDate: selectedValue, mode: 'datetime' });
       } else {
-        const selectedTime = selectedValue || new Date();
-        this.setState({ selectedTime, mode: 'date', isShowDateTimePicker: false });
+        this.onChangePicker(selectedValue);
       }
     }
-
   };
-//Show date time picker
+
+  onChangePicker(selectedValue) {
+    const { mode } = this.state;
+    if (mode == 'date') {
+      const selectedDate = selectedValue || new Date();
+      this.setState({ selectedDate, mode: 'time' });
+    } else {
+      const selectedTime = selectedValue || new Date();
+      //compare ios or android if (iOS) just need selected Time
+      this.setState({ selectedTime, mode: 'date', isShowDateTimePicker: false });
+    }
+  }
+
+  /**
+  * only (IOS)  clickedDonePickcer() 
+  * press Done to hide Picker date
+  */
+  clickedDonePickcer = () => {
+    this.setState({ isShowDateTimePicker: false, mode: 'date' });
+  }
+
+  /**
+    * only (IOS) clickedDonePickcer() 
+    * press Done to hide Picker date
+    */
+  clickedCancelPickcer = () => {
+    this.setState({ selectedDate: null, selectedTime: null, mode: 'date', isShowDateTimePicker: false });
+  }
+
+  //show date time picker
   showPickerDate = () => {
     this.setState({ isShowDateTimePicker: true })
   }
-//TODO: MISSING VALIDATE
+
+  //(Action): Create New a booking Wellness
   createNewBookings = () => {
-    const { selectedDate,selectedTime, location , typeOfEvent, userName } = this.state;
+    const { selectedDate, selectedTime, location, typeOfEvent, userName } = this.state;
+    //check if ios just need selectedDate and android is both
     const newDate = selectedDate ? (Platform.OS === 'ios') ? selectedDate : this.formatDate(selectedDate, selectedTime) : new Date();
-    // if (Platform.OS === 'ios') {
-    //     newDate = selectedDate;
-    // }
-    const parseTimeToString = moment(newDate).format("YYYY-MM-DDTHH:mm:ss");
-    const parseCurrentDateToString = moment(new Date()).format("YYYY-MM-DDTHH:mm:ss");
-    const strEvent = dataEvents[parseInt(typeOfEvent)];
-    const createObj = {
-      event_title : strEvent.label,
-      event_location : location,
-      confirmed_datetime : parseTimeToString,
-      created_at : parseCurrentDateToString,
-      created_by : userName
-    }
-    this.props.onCreateBooking && this.props.onCreateBooking(createObj);
+    //parse time to string for confirmDate
+    const parseTimeToString = moment(newDate).format("YYYY-MM-DD HH:mm:ss");
+    //parse time to string to get currentDate
+    const parseCurrentDateToString = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    //validate
+    this.validate(typeOfEvent, location, parseTimeToString, parseCurrentDateToString, userName);
   }
 
-  renderContent() {
-    const { selectedDate, isShowDateTimePicker, mode, selectedTime, typeOfEvent, location } = this.state;
+  //validate event before send to server
+  validate(event, location, confirmDate, createAt, createBy) {
+    if (event === '') {
+      this.setState({ errorTypeOfEvent: 'Please choose type of event' })
+    } else if (location === '') {
+      this.setState({ errorLocation: 'Please input location of event' })
+    } else {
+      //get string of dropdown event
+      const strEvent = dataEvents[parseInt(event)];
+      const valueEvent = strEvent.label;
+      const createObj = {
+        event_title: valueEvent,
+        event_location: location,
+        confirmed_datetime: confirmDate,
+        created_at: createAt,
+        created_by: createBy
+      }
+      this.props.onCreateBooking && this.props.onCreateBooking(createObj);
+    }
+  }
+
+  //show confirmDate View
+  renderConfirmDate() {
+    const { selectedDate, isShowDateTimePicker, mode, selectedTime } = this.state;
     //get new date base on 2 value selected date and selected time
-    const newDate = selectedDate && selectedTime && this.formatDate(selectedDate, selectedTime) || new Date();
+    let newDate;
+    if (Platform.OS === 'ios') {
+      newDate = selectedDate || new Date();
+    } else {
+      newDate = selectedDate && selectedTime && this.formatDate(selectedDate, selectedTime) || new Date();
+    }
+    return (
+      <View style={{ marginTop: 10 }}>
+        <Text style={{ color: '#B7B7B7' }}>Confirm Date & Time</Text>
+        <TouchableOpacity style={styles.customDate} onPress={() => this.showPickerDate()}>
+          <View style={styles.confirmDate} >
+            <Text style={styles.dateTime}>
+              {newDate ? moment(newDate).format("DD-MMM-YYYY HH:mm") : moment().format("DD-MMM-YYYY HH:mm")}
+            </Text>
+          </View>
+          <Image source={require('../../images/date.png')} style={styles.dateImg} resizeMode="contain" />
+        </TouchableOpacity>
+        {Platform.OS === 'ios' && isShowDateTimePicker && <View style={styles.stylesSelectedPicker}>
+          <TouchableOpacity onPress={this.clickedDonePickcer}>
+            <Text style={styles.textPicker}>Done</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={this.clickedCancelPickcer}>
+            <Text style={styles.textPicker}>Cancel</Text>
+          </TouchableOpacity>
+        </View>}
+        { isShowDateTimePicker && <View style={styles.viewPicker}>
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={newDate}
+            mode={(Platform.OS === 'ios') ? 'datetime' : mode}
+            is24Hour={true}
+            minimumDate={new Date()}
+            display="default"
+            onChange={this.onChange}
+          />
+        </View>
+        }
+      </View>
+    )
+  }
+
+  //render type of event view
+  renderTypeEvent() {
+    const { typeOfEvent, errorTypeOfEvent } = this.state;
     //check typeOfEvent empty or not
     let valueTypeOfEvent = typeOfEvent;
     if (!valueTypeOfEvent || valueTypeOfEvent == "") {
       valueTypeOfEvent = "Please choose type of Event"
     }
-    const isShowFullSCreen = (Platform.OS === 'ios') && isShowDateTimePicker;
     return (
-      <View style={isShowFullSCreen ? styles.containerIOS : styles.container}>
-        {/* view show only title */}
-        <View style={styles.containerCal}>
-          <View style={{ marginTop: 10 }}>
-            <Text style={styles.title}>Create A Booking</Text>
-          </View>
-          {/* view wrapper all content */}
-          <View style={styles.wrapperContent}>
-            {/* view show Type Of Event */}
-            <View style={styles.viewTitle}>
-              <Text style={{ color: '#B7B7B7' }}>Type Of Event</Text>
-              <Dropdown
-                ref={(target => this.refDropdown = target)}
-                style={{ paddingLeft: 5 }}
-                inputContainerStyle={{ borderBottomColor: '#00979D' }}
-                label=""
-                labelHeight={0}
-                onChangeText={this.onChangeTextDropdown}
-                data={dataEvents}
-                value={valueTypeOfEvent}
-              />
-            </View>
-            {/* view show Location of Event */}
-            <View style={styles.viewLocation}>
-              <Text style={{ color: '#B7B7B7' }}>Location of Event</Text>
-              <View style={{ justifyContent: 'center' }}>
-                <TextInput
-                  style={styles.inputStyle}
-                  onChangeText={(value) => this.onChangeText(value)}
-                  value = {location}
-                />
-                <Image
-                  source={require('../../images/location.png')}
-                  style={styles.locationImg}
-                  resizeMode="contain"
-                />
-              </View>
-            </View>
-            {/* view show Confirm Date */}
-            <View style={{ marginTop: 10 }}>
-              <Text style={{ color: '#B7B7B7' }}>Confirm Date & Time</Text>
-              <TouchableOpacity style={styles.customDate} onPress={() => this.showPickerDate()}>
-                <View style={styles.confirmDate} >
-                  <Text style={styles.dateTime}>{selectedDate ? moment(selectedDate).format("MM-DD-YYYY") : moment().format("MM-DD-YYYY")}</Text>
-                </View>
-                <Image
-                  source={require('../../images/date.png')}
-                  style={styles.dateImg}
-                  resizeMode="contain" />
-              </TouchableOpacity>
-              {isShowDateTimePicker && <DateTimePicker
-                testID="dateTimePicker"
-                value={newDate}
-                mode={mode}
-                is24Hour={true}
-                display="default"
-                onChange={this.onChange}
-              />}
-            </View>
-            {/* view show Button Create New */}
-            {!isShowFullSCreen && <View style={styles.viewButton}>
-              <TouchableOpacity style={styles.button} onPress={this.createNewBookings}>
-                <Text style={styles.textButton}>Create New</Text>
-              </TouchableOpacity>
-            </View>}
-          </View>
+      <View style={styles.viewTitle}>
+        <Text style={{ color: '#B7B7B7' }}>Type Of Event</Text>
+        <Dropdown
+          ref={(target => this.refDropdown = target)}
+          style={{ paddingLeft: 5 }}
+          inputContainerStyle={!!errorTypeOfEvent ? { borderBottomColor: 'red', borderBottomWidth: 1 } : { borderBottomColor: '#00979D' }}
+          label=""
+          labelHeight={0}
+          onChangeText={this.onChangeTextDropdown}
+          data={dataEvents}
+          value={valueTypeOfEvent}
+        />
+        {!!errorTypeOfEvent && <Text style={styles.errorStyle}>{errorTypeOfEvent}</Text>}
+      </View>
+    )
+  }
+
+  //render location view
+  renderLocation() {
+    const { location, errorLocation } = this.state;
+    return (
+      <View style={styles.viewLocation}>
+        <Text style={{ color: '#B7B7B7' }}>Location of Event</Text>
+        <View style={{ justifyContent: 'center' }}>
+          <TextInput
+            style={errorLocation ? styles.inputStyleError : styles.inputStyle}
+            onChangeText={(value) => this.onChangeText(value)}
+            value={location}
+          />
+          <Image
+            source={require('../../images/location.png')}
+            style={styles.locationImg}
+            resizeMode="contain"
+          />
+          {!!errorLocation && <Text style={styles.errorStyle}>{errorLocation}</Text>}
         </View>
       </View>
     )
   }
 
+  /** 
+  * (Render) content includes event, location, confirmdate
+  */
+  renderContent() {
+    const { isShowDateTimePicker } = this.state;
+    const isShowFullSCreen = (Platform.OS === 'ios') && isShowDateTimePicker;
+    return (
+      <View style = {{flex: 1}}>
+        <View style={isShowFullSCreen ? styles.containerIOS : styles.container}>
+          {/* view show only title */}
+          <View style={styles.containerCal}>
+            <View style={{ marginTop: 5 }}>
+              <Text style={styles.title}>Create A Booking</Text>
+            </View>
+            {/* view wrapper all content */}
+            <View style={styles.wrapperContent}>
+              {/* view show Type Of Event */}
+              {this.renderTypeEvent()}
+              {/* view show Location of Event */}
+              {this.renderLocation()}
+              {/* view show Confirm Date */}
+              {this.renderConfirmDate()}
+              {/* view show Button Create New */}
+              {!isShowFullSCreen && <View style={styles.viewButton}>
+                <TouchableOpacity style={styles.button} onPress={this.createNewBookings}>
+                  <Text style={styles.textButton}>Create New</Text>
+                </TouchableOpacity>
+              </View>}
+            </View>
+          </View>
+        </View>
+      </View>
+      
+    )
+  }
+
   render() {
-    let { isVisible } = this.state;
+    const { isVisible } = this.state;
     return (
       <Modal
         animationType={'slide'}
         isOpen={isVisible}
         swipeToClose={isVisible}
         swipeArea={500}
+        position="center"
         onClosingState={this.onClosingState}
         style={{ backgroundColor: 'transparent' }}
       >
@@ -260,6 +356,9 @@ const styles = StyleSheet.create({
     margin: 5,
     alignItems: 'center'
   },
+  errorStyle: {
+    color: 'red',
+  },
   customDate: {
     flexDirection: 'row',
     width: '100%',
@@ -270,6 +369,10 @@ const styles = StyleSheet.create({
   dateTime: {
     fontSize: 15,
     fontWeight: '700'
+  },
+  viewPicker: {
+    width:'100%',
+    maxHeight:250
   },
   bodyCal: {
     paddingVertical: 5
@@ -300,6 +403,7 @@ const styles = StyleSheet.create({
   locationImg: {
     position: "absolute",
     right: 10,
+    bottom: 12,
     width: 20,
     height: 15
   },
@@ -346,6 +450,17 @@ const styles = StyleSheet.create({
     padding: 5,
     paddingRight: 30
   },
+  inputStyleError: {
+    display: 'flex',
+    minHeight: 40,
+    borderRadius: 5,
+    textAlignVertical: 'center',
+    borderColor: 'red',
+    borderWidth: 1 / 2,
+    marginTop: 5,
+    padding: 5,
+    paddingRight: 30
+  },
   button: {
     width: 200,
     height: 40,
@@ -353,6 +468,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5
+  },
+  stylesSelectedPicker: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  textPicker: {
+    color: 'blue',
+    fontWeight: '500'
   }
 
 });

@@ -22,7 +22,8 @@ export default (state = initialState, action) => {
         case LOGIN_SUCCESS:
             return {
                 ...state,
-                isLoggedIn: true
+                isLoggedIn: true,
+                errorMsg: ''
             };
 
         case LOGIN_ERROR:
@@ -32,8 +33,6 @@ export default (state = initialState, action) => {
                 errorMsg: action.error.message,
                 user: {}
             };
-        case LOGOUT_SUCCESS:
-            return { ...initialState };
         default:
             return state;
     }
